@@ -3,37 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The ORIGINAL openinapollo.com "automatic, no prompt" mechanism was THIS Smart App Banner,
+     not an apollo:// redirect. iOS auto-triggers the banner to launch the app with app-argument.
+     app-id 979274575 is Apollo's App Store id (what the original used). -->
+<meta name="apple-itunes-app" content="app-id=979274575, app-argument=apollo-open">
 <title>Open in Apollo</title>
-</head>
-<body style="background:#000;color:#fff;font-family:-apple-system,Helvetica,Arial;text-align:center;padding-top:80px">
+<style>
+body{display:flex;justify-content:center;align-items:center;flex-direction:column;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:50px;background:#000;color:#fff}
+#open{font-size:24px;font-weight:500;border-radius:13px;padding:10px 50px;color:#fff;
+background:#4B6CFF;margin:25px;text-decoration:none}
+.x{text-align:center;color:#777;font-size:14px}
+</style>
 <script>
-// Mirrors what openinapollo.com did: read the query params that Apollo's Safari
-// extension (content.js) sends, and bounce to the apollo:// deep link so the
-// sideloaded Apollo opens the exact post/subreddit.
+// Build the apollo:// deep link from the query content.js sends, and (a) put it in the
+// Smart App Banner's app-argument, (b) expose it as a tap fallback. The banner is what
+// gives the no-prompt automatic open (the original site's mechanism).
 (function () {
-  var p = new URLSearchParams(window.location.search);
-  var subreddit = p.get("subreddit");
-  var postID = p.get("postID");
-  var commentID = p.get("commentID");
-  var context = p.get("context");
+  var p = new URLSearchParams(location.search);
+  var s = p.get("subreddit"), post = p.get("postID"), c = p.get("commentID"), ctx = p.get("context");
+  var dest = "apollo://";
+  if (s && post && c && ctx) dest = "apollo://reddit.com/r/"+s+"/comments/"+post+"/_/"+c+"/?context="+ctx;
+  else if (s && post && c)   dest = "apollo://reddit.com/r/"+s+"/comments/"+post+"/_/"+c;
+  else if (s && post)        dest = "apollo://reddit.com/r/"+s+"/comments/"+post;
+  else if (s)                dest = "apollo://reddit.com/r/"+s;
 
-  var dest = null;
-  if (subreddit && postID && commentID && context) {
-    dest = "apollo://reddit.com/r/" + subreddit + "/comments/" + postID + "/_/" + commentID + "/?context=" + context;
-  } else if (subreddit && postID && commentID) {
-    dest = "apollo://reddit.com/r/" + subreddit + "/comments/" + postID + "/_/" + commentID;
-  } else if (subreddit && postID) {
-    dest = "apollo://reddit.com/r/" + subreddit + "/comments/" + postID;
-  } else if (subreddit) {
-    dest = "apollo://reddit.com/r/" + subreddit;
-  }
+  // update the smart banner's app-argument to the real deep link
+  var b = document.querySelector('meta[name="apple-itunes-app"]');
+  b.setAttribute("content", "app-id=979274575, app-argument=" + dest);
 
-  if (dest) {
-    window.location.replace(dest);
-  }
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("open").href = dest;
+  });
 })();
 </script>
-<h2>Opening in Apollo…</h2>
-<p style="opacity:.6">If nothing happens, tap the link your extension generated.</p>
+</head>
+<body>
+<a id="open" href="apollo://">Open in Apollo</a>
+<p class="x">If it doesn't open automatically, tap the banner at the top, or the button above.</p>
 </body>
 </html>
