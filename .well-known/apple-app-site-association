@@ -1,0 +1,9 @@
+{
+  "applinks": {
+    "details": [
+      { "appID": "GX83ZWX278.sideloading.apollo",
+        "appIDs": ["GX83ZWX278.sideloading.apollo"],
+        "components": [ { "/": "/*" } ] }
+    ]
+  }
+}
